@@ -31,7 +31,7 @@ def safeget(cfg,a,b,c=None):
     except:
         return c
 
-DIR = appdirs.AppDirs('flipcoder','cardmode')
+DIR = appdirs.AppDirs('cardmode')
 
 # ENSURE PROGRAM DIRS
 for progdir in (DIR.user_config_dir,):
@@ -126,6 +126,7 @@ while True:
     print(j)
     for r in j:
         cache.set('trello_boards',r['name'],r['id'])
+        print(r['name'])
         if r['name'] == BOARD:
             BOARD = r['id']
     with open(CACHE_FN, 'wb') as cachefile:
@@ -149,8 +150,8 @@ params = {
     'board_fields': 'all',
 }
 
-tout = open(BOARDNAME+'.trello','w')
-toutjson = open(BOARDNAME+'.trello.json','w')
+tout = open(BOARDNAME+'.cardmode','w')
+toutjson = open(BOARDNAME+'.cardmode.json','w')
 
 TRELLO_GET_LISTS = 'https://trello.com/1/boards/'+BOARD
 res = requests.get(TRELLO_GET_LISTS, params)
@@ -178,37 +179,41 @@ for c in j['cards']:
 i = 0
 tprint('$board: ' + BOARDNAME)
 tprint('$id: ' + BOARD)
+tprint('$service: trello')
 tprint()
 for colid,col in lists.items():
     if i>0: tprint()
-    tprint(col['name'] + ': ')
+    tprint(col['name'] + ': [$id:'+str(colid) + ']')
     tindent()
-    tprint('$id: ' + colid)
     # for card in cards:
-    for card in col['cards']:
-        tprint(card['name'] + ': ')
-        tindent()
-        tprint('$id: ' + card['id'])
-        tprint('$dateLastActivity: ' + card['dateLastActivity'])
-        tprint('$url: ' + card['url'])
-        # tprint('$pos: ' + unicode(card['pos']))
-        for checklist in card['idChecklists']:
-            chk = checklists[checklist]
-            tprint(chk['name'] + ":" + "Checklist")
+    if 'cards' in col and col['cards']:
+        for card in col['cards']:
+            tprint(card['name'] + ': ' + '[$id:' + card['id'] + ',$dateLastActivity:' + card['dateLastActivity'] + ']')
+            # tprint(card['name'] + ': ')
             tindent()
-            tprint('$id: ' + chk['id'])
-            for item in chk['checkItems']:
-                sym = '[x]' if item['state']=='complete' else '[ ]'
-                tprint(sym + ' ' + item['name'])
-                tindent()
-                tprint('$id: ' + item['id'])
-                toutdent()
+            # tprint('$id: ' + card['id'])
+            # tprint('$dateLastActivity: ' + card['dateLastActivity'])
+            # tprint('$url: ' + card['url'])
+            # tprint('$pos: ' + unicode(card['pos']))
+            if 'idChecklists' in card and card['idChecklists']:
+                for checklist in card['idChecklists']:
+                    chk = checklists[checklist]
+                    tprint(chk['name'] + ": checklist: [$id:" + chk['id'] + ']')
+                    tindent()
+                    # tprint('$id: ' + chk['id'])
+                    for item in chk['checkItems']:
+                        sym = '[x]' if item['state']=='complete' else '[ ]'
+                        tprint(sym + ' ' + item['name'] + ' [$id:' + item['id'] + ']')
+                        # tprint(sym + ' ' + item['name'])
+                        # tindent()
+                        # tprint('$id: ' + item['id'])
+                        # toutdent()
+                    toutdent()
+            if 'desc' in card and card['desc']:
+                tprint()
+                tprint(card['desc'])
+                tprint()
             toutdent()
-        if card['desc']:
-            tprint()
-            tprint(card['desc'])
-            tprint()
-        toutdent()
     toutdent()
     i += 1
 

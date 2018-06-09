@@ -7,12 +7,12 @@ Open-source under MIT License. See LICENSE for details.
 
 Copyright (c) Grady O'Connell, 2018
 
+*Warning: Still in development.  Not yet safe for use on real data.*
+
 ## Progress
 
-Still in development.  Not yet safe for use on real data.
-
 - [x] Basic json pull
-- [x] .trello format
+- [x] .cardmode format
   - [x] boards
   - [x] lists
   - [x] cards
@@ -25,7 +25,8 @@ Still in development.  Not yet safe for use on real data.
 - [ ] Expand pull features
 - [ ] Expand push features
 - [ ] Vim integration
-- [ ] Vim .trello format highlighting
+- [ ] Vim .cardmode format highlighting
+- [x] Vim metadata conceal
 - [ ] Vim column-per-buffer view
 - [?] Clobber option -- whether to track IDs of certain elements or do rewrites
 - [ ] Webhooks?
