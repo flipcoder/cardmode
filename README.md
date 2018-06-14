@@ -1,13 +1,17 @@
 # cardmode
 
-Trello in your text editor.
+A plaintext project management format w/ Trello sync
 Vim plug-in: [vim-cardmode](https://github.com/flipcoder/vim-cardmode)
 
 Open-source under MIT License. See LICENSE for details.
 
 Copyright (c) Grady O'Connell, 2018
 
-*Warning: Still in development.  Not yet safe for use on real data.*
+*WARNING: THIS HAS JUST STARTED DEVELOPMENT.
+SINCE IT INVOLVES MERGING, SYNCING, AND OTHER POTENTIALLY DESTRUCTIVE OPERATIONS,
+IT IS CURRENTLY UNSAFE FOR ALL PURPOSES.
+TESTERS SHOULD USE AN ISOLATED ENVIRONMENT AND A SEPARATE ACCOUNT FOR
+ALL CONNECTED SERVICES.  ALWAYS BACK UP BOTH ONLINE AND OFFLINE DATA!*
 
 ## Progress
 
