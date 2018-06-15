@@ -5,7 +5,7 @@ Vim plug-in: [vim-cardmode](https://github.com/flipcoder/vim-cardmode)
 
 Open-source under MIT License. See LICENSE for details.
 
-Copyright (c) Grady O'Connell, 2018
+Copyright (c) 2018 Grady O'Connell
 
 *WARNING: THIS HAS JUST STARTED DEVELOPMENT.
 SINCE IT INVOLVES MERGING, SYNCING, AND OTHER POTENTIALLY DESTRUCTIVE OPERATIONS,

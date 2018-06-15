@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 """Card Mode
 MIT License
-Copyright (c) 2017 Grady O'Connell
+Copyright (c) 2018 Grady O'Connell
 
 WARNING: THIS HAS JUST STARTED DEVELOPMENT.
 SINCE IT INVOLVES MERGING, SYNCING, AND OTHER POTENTIALLY DESTRUCTIVE OPERATIONS,
@@ -47,7 +47,7 @@ How does syncing work?
     new changes into your file.
 """
 from __future__ import unicode_literals, print_function
-import os, sys, six, requests, json
+import os, sys, six, requests, json, shutil
 import six.moves.configparser as configparser
 from six.moves.configparser import ConfigParser,RawConfigParser
 import appdirs
@@ -58,7 +58,7 @@ import json_delta
 args = docopt(__doc__)
 
 indent = 0
-tout=None
+TOUT=None
 tsrc=[]
 def tindent(i=1):
     global indent
@@ -73,8 +73,8 @@ def tprint(lines=''):
         # TODO: escape this stuff
         print(' '*4*indent + unicode(line))
         s = ' '*4*indent + unicode(line)
-        if tout:
-            tout.write(s + '\n')
+        if TOUT:
+            TOUT.write(s + '\n')
         r += [s]
     return r
 def treset():
@@ -198,59 +198,76 @@ if SERVICE == 'trello':
         with open(CACHE_FN, 'wb') as cachefile:
             cache.write(cachefile)
         retry = True
-
-    params = {
-        'key': TRELLO_API_KEY,
-        'token': TRELLO_TOKEN,
-        'lists': 'open',
-        'cards': 'open',
-        'filter': 'all',
-        'fields': 'all',
-        'checklists': 'all',
-        'checklist_fields': 'all',
-        'checkItems': 'all',
-        'checkItem_fields': 'all',
-        'members': 'all',
-        'member_fields': 'all',
-        'board_lists': 'all',
-        'board_fields': 'all',
-    }
-
-    tout = open(BOARDNAME+'.cardmode','w')
-    toutjson = open(BOARDNAME+'.cardmode.json','w')
-
-    TRELLO_GET_LISTS = 'https://trello.com/1/boards/'+BOARD
-    res = requests.get(TRELLO_GET_LISTS, params)
-    if res.status_code!=200:
-        print('Error: ' + res.text)
-        sys.exit(1)
-    j = res.json()
-    toutjson.write(json.dumps(j,indent=4))
-    toutjson.close()
-
-    jchecklists = j['checklists']
-    checklists = {}
-    for chk in jchecklists:
-        checklists[chk['id']] = chk
-    lists = OrderedDict()
-    for l in j['lists']:
-        lists[l['id']] = l
-        print(lists)
-    for c in j['cards']:
-        col = lists[c['idList']]
-        if not 'cards' in col:
-            col['cards'] = []
-        col['cards'].append(c)
 else:
     pass
 
-def json_to_cm(s):
-    treset()
+def pull(board):
+    # r = open(BOARDNAME+'.cardmode.json','w')
+    j = None
+    if SERVICE == 'trello':
+        params = {
+            'key': TRELLO_API_KEY,
+            'token': TRELLO_TOKEN,
+            'lists': 'open',
+            'cards': 'open',
+            'filter': 'all',
+            'fields': 'all',
+            'checklists': 'all',
+            'checklist_fields': 'all',
+            'checkItems': 'all',
+            'checkItem_fields': 'all',
+            'members': 'all',
+            'member_fields': 'all',
+            'board_lists': 'all',
+            'board_fields': 'all',
+        }
+        TRELLO_GET_LISTS = 'https://trello.com/1/boards/'+board
+        res = requests.get(TRELLO_GET_LISTS, params)
+        if res.status_code!=200:
+            print('Error: ' + res.text)
+            sys.exit(1)
+        j = res.json()
+        # r.write(json.dumps(j,indent=4))
+        # r.close()
+    else:
+        assert False
+    return j
 
+j = pull(BOARD)
+localbuf=''
+if os.path.exists(BOARDNAME+'.cardmode.local'):
+    print('unmerged changes, .cardmode.local still exists')
+    sys.exit(1)
+shutil.copyfile(BOARDNAME+'.cardmode', BOARDNAME+'.cardmode.local')
+try:
+    with open(BOARDNAME+'.cardmode','r') as tfile:
+        localbuf = tfile.read()
+except IOError:
+    pass
+TOUT = open(BOARDNAME+'.cardmode','w')
+
+def cardmode_from_json(j):
+    treset()
     i = 0
     r = tprint('[$board:' + BOARDNAME + ',$id:' + BOARD + ',$service:'+SERVICE+']')
     r += tprint()
+
     if SERVICE == 'trello':
+        # restructure json for iteration
+        jchecklists = j['checklists']
+        checklists = {}
+        for chk in jchecklists:
+            checklists[chk['id']] = chk
+        lists = OrderedDict()
+        for l in j['lists']:
+            lists[l['id']] = l
+            print(lists)
+        for c in j['cards']:
+            col = lists[c['idList']]
+            if not 'cards' in col:
+                col['cards'] = []
+            col['cards'].append(c)
+
         for colid,col in lists.items():
             if i>0: r += tprint()
             r += tprint(col['name'] + ': [$id:'+str(colid) + ']')
@@ -287,17 +304,17 @@ def json_to_cm(s):
             toutdent()
             i += 1
     else:
-        pass
+        assert False
 
     return r
 
-def cm_to_json(s):
+def json_from_cardmode(j):
     j = {}
     
     return j
 
-json_to_cm(col)
+print(cardmode_from_json(j))
 
-tout.close()
-tout = None
+TOUT.close()
+TOUT = None
 
